@@ -18,8 +18,9 @@ def test_dnssec_service_created():
             {
                 "HostedZoneId": enums.HOSTED_ZONE_ID,
             },
-        )
+        ),
     )
+
 
 def test_kms_key_created():
     app = core.App()
@@ -33,8 +34,9 @@ def test_kms_key_created():
                 "KeySpec": kms.KeySpec.ECC_NIST_P256,
                 "KeyUsage": kms.KeyUsage.SIGN_VERIFY,
             }
-        )
+        ),
     )
+
 
 def test_key_alias_created():
     app = core.App()
@@ -46,11 +48,24 @@ def test_key_alias_created():
             {
                 "AliasName": "alias/thatsmidnight-dnssec-signing-key",
             }
-        )
+        ),
     )
 
-# def test_resource_policy_created():
-#     app = core.App()
-#     stack = MyStack(app)
-#     template = assertions.Template.from_stack(stack)
-#     template.has_resource("AWS::Route53::KeySigningKey", assertions.Match.any_value())
+
+def test_signing_key_created():
+    app = core.App()
+    stack = MyStack(app)
+    template = assertions.Template.from_stack(stack)
+    template.has_resource(
+        "AWS::Route53::KeySigningKey",
+        assertions.Match.object_like(
+            {
+                "Properties": {
+                    "Name": "ThatsMidnightDNSSECKSK",
+                    "HostedZoneId": enums.HOSTED_ZONE_ID,
+                    "Status": "ACTIVE",
+                    "KeyManagementServiceArn": assertions.Match.any_value(),
+                }
+            }
+        ),
+    )

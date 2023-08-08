@@ -1,10 +1,10 @@
 # Standard Library
-import builtins
 from os import getenv
-from typing import List
+from typing import List, Optional
 
 # Third Party
 from aws_cdk import (
+    Duration,
     Environment,
     RemovalPolicy,
     aws_iam as iam,
@@ -25,13 +25,35 @@ class MyHostedZone(route53.HostedZone):
     @classmethod
     def import_existing(
         cls, scope: Construct, id: str, hosted_zone_id: str, zone_name: str
-    ) -> route53.HostedZone:
+    ) -> route53.IHostedZone:
         return route53.HostedZone.from_hosted_zone_attributes(
             scope, id, hosted_zone_id=hosted_zone_id, zone_name=zone_name
         )
 
     def __init__(self, scope: Construct, id: str, zone_name: str) -> None:
         super().__init__(scope, id, zone_name=zone_name)
+
+
+class MyDSRecord(route53.DsRecord):
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        zone: route53.IHostedZone,
+        values: List[str],
+        record_name: Optional[str] = None,
+        ttl: Duration = Duration.seconds(3600),
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            scope,
+            id,
+            zone=zone,
+            values=values,
+            record_name=record_name,
+            ttl=ttl,
+            **kwargs,
+        )
 
 
 class MyDNSSECService(route53.CfnDNSSEC):
@@ -63,6 +85,35 @@ class MyKmsKey(kms.Key):
             key_spec=key_spec,
             key_usage=key_usage,
             enable_key_rotation=enable_key_rotation,
+            removal_policy=removal_policy,
+        )
+
+
+class MyKeyAlias(kms.Alias):
+    @classmethod
+    def import_existing(
+        cls, scope: Construct, id: str, alias_name: str, target_key: kms.IKey
+    ) -> kms.IAlias:
+        return kms.Alias.from_alias_attributes(
+            scope,
+            id,
+            alias_name=alias_name,
+            alias_target_key=target_key,
+        )
+
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        alias_name: str,
+        target_key: kms.IKey,
+        removal_policy: str = RemovalPolicy.DESTROY,
+    ) -> None:
+        super().__init__(
+            scope,
+            id,
+            alias_name=alias_name,
+            target_key=target_key,
             removal_policy=removal_policy,
         )
 

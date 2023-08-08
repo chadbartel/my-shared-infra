@@ -36,6 +36,19 @@ def test_kms_key_created():
         )
     )
 
+def test_key_alias_created():
+    app = core.App()
+    stack = MyStack(app)
+    template = assertions.Template.from_stack(stack)
+    template.has_resource_properties(
+        "AWS::KMS::Alias",
+        assertions.Match.object_like(
+            {
+                "AliasName": "alias/thatsmidnight-dnssec-signing-key",
+            }
+        )
+    )
+
 # def test_resource_policy_created():
 #     app = core.App()
 #     stack = MyStack(app)

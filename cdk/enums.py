@@ -8,6 +8,7 @@ AWS_ACCOUNT_ID = getenv("AWS_ACCOUNT_ID")
 AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = getenv("AWS_SECRET_ACCESS_KEY")
 HOSTED_ZONE_ID = getenv("HOSTED_ZONE_ID")
+CHAINOFTRUST_DS_RECORD = getenv("CHAINOFTRUST_DS_RECORD")
 
 
 # Enums
@@ -25,7 +26,7 @@ class MyDomainName(Enum):
 
 
 class CDKStackRegion(Enum):
-    region = "us-west-2"
+    region = getenv("AWS_REGION", "us-west-2")
 
 
 # Data classes

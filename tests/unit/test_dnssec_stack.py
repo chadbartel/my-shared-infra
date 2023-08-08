@@ -69,3 +69,22 @@ def test_signing_key_created():
             }
         ),
     )
+
+
+def test_ds_record_created():
+    app = core.App()
+    stack = MyStack(app)
+    template = assertions.Template.from_stack(stack)
+    template.has_resource(
+        "AWS::Route53::RecordSet",
+        assertions.Match.object_like(
+            {
+                "Properties": {
+                    "HostedZoneId": enums.HOSTED_ZONE_ID,
+                    "Name": "*.thatsmidnight.com.",
+                    "TTL": "3600",
+                    "Type": "DS",
+                }
+            }
+        )
+    )

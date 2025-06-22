@@ -3,6 +3,7 @@ from aws_cdk import (
     Stack,
     CfnOutput,
     aws_kms as kms,
+    aws_ssm as ssm,
     aws_route53 as route53,
     aws_certificatemanager as acm,
 )
@@ -142,5 +143,14 @@ class MyDNSSECStack(Stack):
             value=certificate.certificate_arn,
             description="ARN of the wildcard API certificate",
             export_name="wildcard-api-certificate-arn",
+        )
+
+        # 4. Store the certificate ARN in SSM Parameter Store
+        ssm.StringParameter(
+            self,
+            "ApiCertificateArnParameter",
+            parameter_name="/api/certificate/wilcard-certificate-arn",
+            string_value=certificate.certificate_arn,
+            description="ARN of the wildcard API certificate for subdomains",
         )
         # endregion

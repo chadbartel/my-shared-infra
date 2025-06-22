@@ -1,5 +1,11 @@
 # Third Party
-from aws_cdk import Stack, aws_kms as kms
+from aws_cdk import (
+    Stack,
+    CfnOutput,
+    aws_kms as kms,
+    aws_route53 as route53,
+    aws_certificatemanager as acm,
+)
 from constructs import Construct
 
 # My Libraries
@@ -114,18 +120,27 @@ class MyDNSSECStack(Stack):
             record_name="*",
         )
 
+        # region Create a wildcard ACM certificate for API subdomains
+        # 1. Look up your existing hosted zone
+        hosted_zone = route53.HostedZone.from_lookup(
+            self, "HostedZone",
+            domain_name=enums.MyDomainName.domain_name.value
+        )
 
-# class MyApiSubdomainStack(Stack):
-#     def __init__(
-#         self,
-#         scope: Construct,
-#         id: str = "my-api-subdomain-stack",
-#         *,
-#         stack_name: str = "my-api-subdomain-stack",
-#         **kwargs,
-#     ) -> None:
-#         env = constructs.MyEnvironment()
+        # 2. Create the ACM certificate in the stack's region
+        certificate = acm.Certificate(
+            self,
+            "ApiCertificate",
+            domain_name=f"*.{enums.MyDomainName.domain_name.value}",  # Create a wildcard certificate for subdomains
+            validation=acm.CertificateValidation.from_dns(hosted_zone),
+        )
 
-#         super().__init__(scope, id, env=env, stack_name=stack_name, **kwargs)
-
-#         # TODO: do stuff
+        # 3. Output the certificate ARN so other stacks can use it
+        CfnOutput(
+            self,
+            "CertificateArnOutput",
+            value=certificate.certificate_arn,
+            description="ARN of the wildcard API certificate",
+            export_name="wildcard-api-certificate-arn",
+        )
+        # endregion

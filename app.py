@@ -22,7 +22,7 @@ from cdk import stacks
 app = App()
 
 # Create stacks
-stacks.MyDNSSECStack(app)
+stacks.MyDNSSECStack(app, cross_region_references=True)
 
 # Synthesize application stack
 app.synth()

@@ -1,11 +1,7 @@
-# Standard Library
-from typing import Optional
-
 # Third Party
 from aws_cdk import (
     Stack,
     CfnOutput,
-    Environment,
     aws_kms as kms,
     aws_route53 as route53,
     aws_certificatemanager as acm,

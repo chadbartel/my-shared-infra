@@ -124,43 +124,26 @@ class MyDNSSECStack(Stack):
             record_name="*",
         )
 
-
-class MyDnsCertificateStack(Stack):
-    def __init__(
-        self,
-        scope: Construct,
-        construct_id: str,
-        domain_name: str,
-        env: Environment,
-        stack_suffix: Optional[str] = "",
-        cross_region_references: Optional[bool] = True
-    ) -> None:
-        super().__init__(
-            scope,
-            construct_id,
-            env=env,
-            cross_region_references=cross_region_references,
-        )
-        self.stack_suffix = (stack_suffix if stack_suffix else "").lower()
-        self.domain_name = f"{domain_name}{self.stack_suffix}"
-
+        # Create a wildcard ACM certificate for API subdomains
         # 1. Look up your existing hosted zone
         hosted_zone = route53.HostedZone.from_lookup(
             self, "HostedZone",
-            domain_name=self.domain_name
+            domain_name=enums.MyDomainName.domain_name.value
         )
 
-        # 2. Create the ACM certificate in the stack's region (which will be us-east-1)
-        self.certificate = acm.Certificate(
-            self, "ApiCertificate",
-            domain_name=f"*.{self.domain_name}",  # Create a wildcard certificate for subdomains
+        # 2. Create the ACM certificate in the stack's region
+        certificate = acm.Certificate(
+            self,
+            "ApiCertificate",
+            domain_name=f"*.{enums.MyDomainName.domain_name.value}",  # Create a wildcard certificate for subdomains
             validation=acm.CertificateValidation.from_dns(hosted_zone),
         )
 
         # 3. Output the certificate ARN so other stacks can use it
         CfnOutput(
-            self, "CertificateArnOutput",
-            value=self.certificate.certificate_arn,
-            description="The ARN of the ACM certificate for the API",
-            export_name=f"ApiCertificateArn{self.stack_suffix}",
+            self,
+            "CertificateArnOutput",
+            value=certificate.certificate_arn,
+            description="ARN of the wildcard API certificate",
+            export_name="wildcard-api-certificate-arn",
         )

@@ -1,5 +1,15 @@
+# Standard Library
+from typing import Optional
+
 # Third Party
-from aws_cdk import Stack, aws_kms as kms
+from aws_cdk import (
+    Stack,
+    CfnOutput,
+    Environment,
+    aws_kms as kms,
+    aws_route53 as route53,
+    aws_certificatemanager as acm,
+)
 from constructs import Construct
 
 # My Libraries
@@ -115,17 +125,42 @@ class MyDNSSECStack(Stack):
         )
 
 
-# class MyApiSubdomainStack(Stack):
-#     def __init__(
-#         self,
-#         scope: Construct,
-#         id: str = "my-api-subdomain-stack",
-#         *,
-#         stack_name: str = "my-api-subdomain-stack",
-#         **kwargs,
-#     ) -> None:
-#         env = constructs.MyEnvironment()
+class MyDnsCertificateStack(Stack):
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        domain_name: str,
+        env: Environment,
+        stack_suffix: Optional[str] = "",
+        cross_region_references: Optional[bool] = True
+    ) -> None:
+        super().__init__(
+            scope,
+            construct_id,
+            env=env,
+            cross_region_references=cross_region_references,
+        )
+        self.stack_suffix = (stack_suffix if stack_suffix else "").lower()
+        self.domain_name = f"{domain_name}{self.stack_suffix}"
 
-#         super().__init__(scope, id, env=env, stack_name=stack_name, **kwargs)
+        # 1. Look up your existing hosted zone
+        hosted_zone = route53.HostedZone.from_lookup(
+            self, "HostedZone",
+            domain_name=self.domain_name
+        )
 
-#         # TODO: do stuff
+        # 2. Create the ACM certificate in the stack's region (which will be us-east-1)
+        self.certificate = acm.Certificate(
+            self, "ApiCertificate",
+            domain_name=f"*.{self.domain_name}",  # Create a wildcard certificate for subdomains
+            validation=acm.CertificateValidation.from_dns(hosted_zone),
+        )
+
+        # 3. Output the certificate ARN so other stacks can use it
+        CfnOutput(
+            self, "CertificateArnOutput",
+            value=self.certificate.certificate_arn,
+            description="The ARN of the ACM certificate for the API",
+            export_name=f"ApiCertificateArn{self.stack_suffix}",
+        )

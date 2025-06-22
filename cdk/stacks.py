@@ -124,7 +124,7 @@ class MyDNSSECStack(Stack):
             record_name="*",
         )
 
-        # Create a wildcard ACM certificate for API subdomains
+        # region Create a wildcard ACM certificate for API subdomains
         # 1. Look up your existing hosted zone
         hosted_zone = route53.HostedZone.from_lookup(
             self, "HostedZone",
@@ -147,3 +147,4 @@ class MyDNSSECStack(Stack):
             description="ARN of the wildcard API certificate",
             export_name="wildcard-api-certificate-arn",
         )
+        # endregion

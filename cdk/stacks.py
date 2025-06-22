@@ -120,37 +120,3 @@ class MyDNSSECStack(Stack):
             values=[enums.CHAINOFTRUST_DS_RECORD],
             record_name="*",
         )
-
-        # region Create a wildcard ACM certificate for API subdomains
-        # 1. Look up your existing hosted zone
-        hosted_zone = route53.HostedZone.from_lookup(
-            self, "HostedZone",
-            domain_name=enums.MyDomainName.domain_name.value
-        )
-
-        # 2. Create the ACM certificate in the stack's region
-        certificate = acm.Certificate(
-            self,
-            "ApiCertificate",
-            domain_name=f"*.{enums.MyDomainName.domain_name.value}",  # Create a wildcard certificate for subdomains
-            validation=acm.CertificateValidation.from_dns(hosted_zone),
-        )
-
-        # 3. Output the certificate ARN so other stacks can use it
-        CfnOutput(
-            self,
-            "CertificateArnOutput",
-            value=certificate.certificate_arn,
-            description="ARN of the wildcard API certificate",
-            export_name="wildcard-api-certificate-arn",
-        )
-
-        # 4. Store the certificate ARN in SSM Parameter Store
-        ssm.StringParameter(
-            self,
-            "ApiCertificateArnParameter",
-            parameter_name="/api/certificate/wilcard-certificate-arn",
-            string_value=certificate.certificate_arn,
-            description="ARN of the wildcard API certificate for subdomains",
-        )
-        # endregion

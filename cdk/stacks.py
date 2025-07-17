@@ -29,15 +29,15 @@ class MyDNSSECStack(Stack):
         # Add DNSSEC service to my hosted zone
         my_dnssec_service = constructs.MyDNSSECService(
             self,
-            "thatsmidnight-dnssec-service",
+            "chadbartel-dnssec-service",
             hosted_zone_id=enums.HOSTED_ZONE_ID,
         )
 
         # Create cryptographic key for signing
-        my_kms_alias = "thatsmidnight-dnssec-signing-key"
+        my_kms_alias = "chadbartel-dnssec-signing-key"
         my_dnssec_key = constructs.MyKmsKey(
             self,
-            "thatsmidnight-dnssec-key",
+            "chadbartel-dnssec-key",
             alias=my_kms_alias,
             key_spec=kms.KeySpec.ECC_NIST_P256,
             key_usage=kms.KeyUsage.SIGN_VERIFY,
@@ -84,7 +84,7 @@ class MyDNSSECStack(Stack):
         my_ksk = constructs.MyKeySigningKey(
             self,
             "my-key-signing-key",
-            name="ThatsMidnightDNSSECKSK",
+            name="chadbartelDNSSECKSK",
             hosted_zone_id=enums.HOSTED_ZONE_ID,
             kms_service_arn=Stack.of(self).format_arn(
                 region=env.region,

@@ -46,7 +46,7 @@ def test_key_alias_created():
         "AWS::KMS::Alias",
         assertions.Match.object_like(
             {
-                "AliasName": "alias/thatsmidnight-dnssec-signing-key",
+                "AliasName": "alias/chadbartel-dnssec-signing-key",
             }
         ),
     )
@@ -61,7 +61,7 @@ def test_signing_key_created():
         assertions.Match.object_like(
             {
                 "Properties": {
-                    "Name": "ThatsMidnightDNSSECKSK",
+                    "Name": "chadbartelDNSSECKSK",
                     "HostedZoneId": enums.HOSTED_ZONE_ID,
                     "Status": "ACTIVE",
                     "KeyManagementServiceArn": assertions.Match.any_value(),
@@ -81,7 +81,7 @@ def test_ds_record_created():
             {
                 "Properties": {
                     "HostedZoneId": enums.HOSTED_ZONE_ID,
-                    "Name": "*.thatsmidnight.com.",
+                    "Name": "*.chadbartel.com.",
                     "TTL": "3600",
                     "Type": "DS",
                 }

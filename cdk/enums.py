@@ -22,7 +22,7 @@ class BaseEnum(Enum):
 
 
 class MyDomainName(Enum):
-    domain_name = "thatsmidnight.com"
+    domain_name = "chadbartel.com"
 
 
 class CDKStackRegion(Enum):
